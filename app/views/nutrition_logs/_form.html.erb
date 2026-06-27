@@ -1,0 +1,44 @@
+<div class="card">
+  <%= form_with model: nutrition_log, url: url, class: "space-y-5" do |f| %>
+    <% if nutrition_log.errors.any? %>
+      <div class="field-error">
+        <ul class="list-disc pl-5">
+          <% nutrition_log.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :date, class: "field-label" %>
+      <%= f.date_field :date, class: "field-input" %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= f.label :calories, class: "field-label" %>
+        <%= f.number_field :calories, class: "field-input" %>
+      </div>
+      <div>
+        <%= f.label :protein_g, "Protein (g)", class: "field-label" %>
+        <%= f.number_field :protein_g, class: "field-input" %>
+      </div>
+      <div>
+        <%= f.label :carbs_g, "Carbs (g)", class: "field-label" %>
+        <%= f.number_field :carbs_g, class: "field-input" %>
+      </div>
+      <div>
+        <%= f.label :fat_g, "Fat (g)", class: "field-label" %>
+        <%= f.number_field :fat_g, class: "field-input" %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :notes, class: "field-label" %>
+      <%= f.text_area :notes, rows: 3, class: "field-input" %>
+    </div>
+
+    <%= f.submit "Save", class: "btn-primary" %>
+  <% end %>
+</div>

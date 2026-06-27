@@ -1,0 +1,31 @@
+<% content_for :title, "Add your Claude API key" %>
+
+<div class="max-w-xl">
+  <h1 class="text-2xl font-bold mb-1">Add your Claude API key</h1>
+  <p class="text-navy-500 mb-6">
+    Claude reads your profile, race goal, Strava activity, and nutrition logs to
+    build and adapt your training program. Your key is encrypted at rest and
+    never shown again in full.
+  </p>
+
+  <div class="card">
+    <%= form_with model: @claude_credential, url: claude_credential_path, method: :post, class: "space-y-5" do |f| %>
+      <% if @claude_credential.errors.any? %>
+        <div class="field-error">
+          <ul class="list-disc pl-5">
+            <% @claude_credential.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :api_key, "Anthropic API key", class: "field-label" %>
+        <%= f.password_field :api_key, value: "", placeholder: "sk-ant-...", autocomplete: "off", class: "field-input font-mono" %>
+      </div>
+
+      <%= f.submit "Save key", class: "btn-primary" %>
+    <% end %>
+  </div>
+</div>

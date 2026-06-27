@@ -1,0 +1,30 @@
+<% content_for :title, "Coach chat" %>
+
+<h1 class="text-2xl font-bold mb-6">Talk to your coach</h1>
+
+<% if current_user.claude_credential.blank? %>
+  <div class="banner-warning mb-6">
+    <span>Add your Claude API key to chat with your coach.</span>
+    <%= link_to "Add key", new_claude_credential_path, class: "btn-secondary shrink-0" %>
+  </div>
+<% end %>
+
+<div class="card mb-4 min-h-[50vh] flex flex-col">
+  <div class="flex-1 space-y-4 overflow-y-auto">
+    <% if @messages.empty? %>
+      <p class="text-navy-400 text-sm text-center py-12">No messages yet. Tell your coach how you're feeling.</p>
+    <% end %>
+    <% @messages.each do |message| %>
+      <div class="<%= message.role == 'user' ? 'text-right' : 'text-left' %>">
+        <div class="inline-block max-w-[80%] rounded-2xl px-4 py-2.5 text-sm <%= message.role == 'user' ? 'bg-navy-800 text-white' : 'bg-navy-50 text-navy-900' %>">
+          <%= simple_format(message.content, class: "mb-0") %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%= form_with url: messages_path, method: :post, class: "flex gap-2" do |f| %>
+  <%= f.text_area :content, name: "message[content]", rows: 2, placeholder: "How are you feeling? Any pain, fatigue, motivation issues?", class: "field-input flex-1 resize-none" %>
+  <%= f.submit "Send", class: "btn-primary self-end" %>
+<% end %>

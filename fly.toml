@@ -1,0 +1,28 @@
+app = 'a-runners-diary'
+primary_region = 'cdg'
+console_command = '/rails/bin/rails console'
+
+[build]
+
+[deploy]
+  release_command = 'bin/rails db:migrate'
+
+[env]
+  PORT = '3000'
+  RAILS_ENV = 'production'
+  RAILS_LOG_TO_STDOUT = 'true'
+  RAILS_SERVE_STATIC_FILES = 'true'
+  SOLID_QUEUE_IN_PUMA = 'true'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

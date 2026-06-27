@@ -1,0 +1,34 @@
+<% content_for :title, "Admin · Athletes" %>
+
+<h1 class="text-2xl font-bold mb-6">Athletes</h1>
+
+<div class="card !p-0 overflow-hidden">
+  <table class="table-clean">
+    <thead>
+      <tr>
+        <th class="px-5">Name</th>
+        <th>Email</th>
+        <th>Race</th>
+        <th>Strava</th>
+        <th class="px-5"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td class="px-5 font-medium"><%= user.full_name %></td>
+          <td class="text-navy-500"><%= user.email %></td>
+          <td><%= user.race ? "#{user.race.distance_label} on #{user.race.race_date}" : "—" %></td>
+          <td>
+            <% if user.strava_connection %>
+              <span class="badge-success">Connected</span>
+            <% else %>
+              <span class="badge-neutral">Not connected</span>
+            <% end %>
+          </td>
+          <td class="px-5"><%= link_to "View", admin_user_path(user), class: "text-navy-600 hover:underline font-medium" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

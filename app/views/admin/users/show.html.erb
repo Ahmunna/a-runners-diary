@@ -1,0 +1,74 @@
+<% content_for :title, "Admin · #{@user.full_name}" %>
+
+<%= link_to admin_users_path, class: "inline-flex items-center gap-1 text-navy-600 hover:underline text-sm font-medium" do %>
+  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+  All athletes
+<% end %>
+
+<h1 class="text-2xl font-bold mt-2 mb-6"><%= @user.full_name %></h1>
+
+<div class="grid md:grid-cols-2 gap-5">
+  <section class="card">
+    <h2 class="font-semibold mb-3">Profile</h2>
+    <% if @user.athlete_profile %>
+      <p class="text-sm text-navy-700">
+        Age <%= @user.athlete_profile.age %>, <%= @user.athlete_profile.sex %>, <%= @user.athlete_profile.height_cm %>cm
+      </p>
+      <p class="text-sm text-navy-500 mt-2"><%= @user.athlete_profile.notes %></p>
+    <% else %>
+      <p class="text-sm text-navy-400">No profile yet.</p>
+    <% end %>
+  </section>
+
+  <section class="card">
+    <h2 class="font-semibold mb-3">Race goal</h2>
+    <% if @race %>
+      <p class="text-sm text-navy-700"><%= @race.distance_label %> on <%= @race.race_date %>, target <%= @race.time_objective %></p>
+      <span class="badge-info mt-2"><%= @race.difficulty.humanize %></span>
+    <% else %>
+      <p class="text-sm text-navy-400">No race set.</p>
+    <% end %>
+  </section>
+
+  <section class="card md:col-span-2">
+    <h2 class="font-semibold mb-3">Active program</h2>
+    <% if @program %>
+      <p class="text-sm text-navy-700 whitespace-pre-wrap mb-3"><%= @program.claude_summary %></p>
+      <ul class="text-sm text-navy-600 space-y-1">
+        <% @program.training_days.order(:date).each do |day| %>
+          <li class="flex justify-between border-b border-navy-50 py-1.5">
+            <span><%= day.date %></span>
+            <span class="badge-<%= day.status == 'completed' ? 'success' : (day.status == 'skipped' ? 'warning' : 'neutral') %>"><%= day.status.humanize %></span>
+            <span class="text-navy-500 flex-1 ml-3"><%= day.workout %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-navy-400">No active program.</p>
+    <% end %>
+  </section>
+
+  <section class="card">
+    <h2 class="font-semibold mb-3">Recent Strava activities</h2>
+    <ul class="text-sm text-navy-600 space-y-1">
+      <% @activities.each do |a| %>
+        <li class="flex justify-between"><span><%= a.occurred_at&.to_date %></span><span><%= a.distance_km %>km · <%= a.duration_minutes %>min</span></li>
+      <% end %>
+      <% if @activities.empty? %>
+        <li class="text-navy-400">None synced yet.</li>
+      <% end %>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 class="font-semibold mb-3">Recent chat</h2>
+    <ul class="text-sm text-navy-600 space-y-2">
+      <% @messages.each do |m| %>
+        <li><span class="badge-<%= m.role == 'user' ? 'neutral' : 'info' %> mr-2"><%= m.role %></span><%= truncate(m.content, length: 160) %></li>
+      <% end %>
+      <% if @messages.empty? %>
+        <li class="text-navy-400">No chat yet.</li>
+      <% end %>
+    </ul>
+  </section>
+</div>

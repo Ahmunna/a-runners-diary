@@ -1,0 +1,49 @@
+<% content_for :title, "Tell us about yourself" %>
+
+<div class="max-w-xl mx-auto">
+  <div class="flex items-center gap-2 text-xs font-medium text-navy-400 mb-3">
+    <span class="text-navy-700">Step 1 of 2</span>
+    <span>·</span>
+    <span>Profile</span>
+  </div>
+
+  <h1 class="text-2xl font-bold mb-1">Tell us about yourself</h1>
+  <p class="text-navy-500 mb-6">This helps Claude tailor your training and catch anything risky.</p>
+
+  <div class="card">
+    <%= form_with model: @athlete_profile, url: onboarding_profile_path, method: :post, class: "space-y-5" do |f| %>
+      <% if @athlete_profile.errors.any? %>
+        <div class="field-error">
+          <ul class="list-disc pl-5">
+            <% @athlete_profile.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <%= f.label :age, class: "field-label" %>
+          <%= f.number_field :age, class: "field-input" %>
+        </div>
+        <div>
+          <%= f.label :height_cm, "Height (cm)", class: "field-label" %>
+          <%= f.number_field :height_cm, class: "field-input" %>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :sex, class: "field-label" %>
+        <%= f.select :sex, AthleteProfile::SEXES, { prompt: "Select" }, class: "field-input" %>
+      </div>
+
+      <div>
+        <%= f.label :notes, "Anything else Claude should know?", class: "field-label" %>
+        <%= f.text_area :notes, rows: 6, placeholder: "Injuries, context, goals beyond the race...", class: "field-input" %>
+      </div>
+
+      <%= f.submit "Continue", class: "btn-primary w-full" %>
+    <% end %>
+  </div>
+</div>

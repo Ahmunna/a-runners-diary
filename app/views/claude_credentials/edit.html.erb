@@ -1,0 +1,41 @@
+<% content_for :title, "Settings" %>
+
+<h1 class="text-2xl font-bold mb-6">Settings</h1>
+
+<div class="max-w-xl space-y-6">
+  <div class="card">
+    <h2 class="font-semibold mb-1">Claude API key</h2>
+    <% if @claude_credential.persisted? && @claude_credential.api_key.present? %>
+      <p class="text-sm text-navy-500 mb-4">
+        Current key: <code class="bg-navy-50 text-navy-700 px-2 py-1 rounded text-xs"><%= @claude_credential.masked_key %></code>
+      </p>
+    <% else %>
+      <p class="text-sm text-navy-500 mb-4">No key saved yet.</p>
+    <% end %>
+
+    <%= form_with model: @claude_credential, url: claude_credential_path, method: :patch, class: "space-y-4" do |f| %>
+      <% if @claude_credential.errors.any? %>
+        <div class="field-error">
+          <ul class="list-disc pl-5">
+            <% @claude_credential.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :api_key, "Replace with a new key", class: "field-label" %>
+        <%= f.password_field :api_key, value: "", placeholder: "sk-ant-...", autocomplete: "off", class: "field-input font-mono" %>
+      </div>
+
+      <%= f.submit "Update key", class: "btn-primary" %>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <h2 class="font-semibold mb-1">Account</h2>
+    <p class="text-sm text-navy-500 mb-4">Update your email or password.</p>
+    <%= link_to "Edit account", edit_user_registration_path, class: "btn-secondary" %>
+  </div>
+</div>

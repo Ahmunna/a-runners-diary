@@ -1,0 +1,29 @@
+<% content_for :title, "Log in" %>
+
+<h1 class="text-xl font-bold mb-1">Welcome back</h1>
+<p class="text-sm text-navy-500 mb-6">Log in to see today's training.</p>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-5" }) do |f| %>
+  <div>
+    <%= f.label :email, class: "field-label" %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "field-input" %>
+  </div>
+
+  <div>
+    <%= f.label :password, class: "field-label" %>
+    <%= f.password_field :password, autocomplete: "current-password", class: "field-input" %>
+  </div>
+
+  <% if devise_mapping.rememberable? %>
+    <div class="flex items-center gap-2">
+      <%= f.check_box :remember_me, class: "rounded border-navy-300 text-navy-700 focus:ring-navy-300" %>
+      <%= f.label :remember_me, class: "text-sm text-navy-700" %>
+    </div>
+  <% end %>
+
+  <%= f.submit "Log in", class: "btn-primary w-full" %>
+<% end %>
+
+<div class="mt-6 pt-6 border-t border-navy-100">
+  <%= render "devise/shared/links" %>
+</div>

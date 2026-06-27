@@ -1,0 +1,7 @@
+<% content_for :title, "Edit nutrition log" %>
+
+<h1 class="text-2xl font-bold mb-6">Edit nutrition log</h1>
+
+<div class="max-w-xl">
+  <%= render "form", nutrition_log: @nutrition_log, url: nutrition_log_path(@nutrition_log) %>
+</div>
