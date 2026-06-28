@@ -1,12 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Drives the dashboard's notification setup card through three states:
-// iOS not installed to home screen yet -> not yet subscribed -> enabled.
-// iOS Safari only exposes the Push API once the PWA has been added to the
-// home screen and opened from there (no install prompt like Android, no
-// way to detect "not installed" other than this standalone check).
+// Drives the dashboard's "get the app" card. Installing to the home screen
+// (installStep) is independent of push notifications being configured —
+// iOS Safari only exposes the Push API once installed and opened from the
+// home screen, but the install step itself is always relevant regardless
+// of whether VAPID keys are set up server-side. Notification-specific
+// states (enableStep/enabled/unsupported) only apply when a VAPID public
+// key was actually injected into the page.
 export default class extends Controller {
-  static targets = ["installStep", "enableStep", "enabled", "unsupported"]
+  static targets = ["installStep", "enableStep", "enabled", "installedNoPush", "unsupported"]
   static values = { vapidPublicKey: String }
 
   async connect() {
@@ -15,6 +17,19 @@ export default class extends Controller {
 
     if (isIos && !isStandalone) {
       this.show(this.installStepTarget)
+      return
+    }
+
+    if (!this.vapidPublicKeyValue) {
+      // Nothing actionable to show: iOS users who already installed get a
+      // confirmation; everyone else (desktop/Android, never asked to
+      // install anything) just sees no card at all rather than a false
+      // "you're installed" claim.
+      if (isIos && isStandalone) {
+        this.show(this.installedNoPushTarget)
+      } else {
+        this.element.classList.add("hidden")
+      }
       return
     }
 
