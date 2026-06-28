@@ -30,6 +30,8 @@ module Coach
         end
       end
 
+      PushNotificationService.notify(user, title: "Your coach updated your plan", body: plan["summary"].to_s.truncate(150))
+
       program
     end
 

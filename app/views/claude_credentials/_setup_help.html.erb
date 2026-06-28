@@ -1,0 +1,37 @@
+<div class="card !bg-navy-50 !border-navy-100 space-y-4">
+  <h2 class="font-semibold text-navy-900">How to get a key</h2>
+
+  <ol class="space-y-3 text-sm text-navy-700">
+    <li class="flex gap-3">
+      <span class="badge-info shrink-0">1</span>
+      <span>
+        Create an account at
+        <%= link_to "console.anthropic.com", "https://console.anthropic.com", target: "_blank", rel: "noopener", class: "font-medium text-navy-900 underline" %>
+        — this is the developer console, not the claude.ai chat app.
+      </span>
+    </li>
+    <li class="flex gap-3">
+      <span class="badge-info shrink-0">2</span>
+      <span>Go to <strong>Settings → Billing</strong> and add a payment method. $5–10 in credits is plenty to start.</span>
+    </li>
+    <li class="flex gap-3">
+      <span class="badge-info shrink-0">3</span>
+      <span>Go to <strong>Settings → API Keys → Create Key</strong>, then copy the key — it starts with <code class="bg-white px-1 rounded">sk-ant-...</code> and is only shown once.</span>
+    </li>
+    <li class="flex gap-3">
+      <span class="badge-info shrink-0">4</span>
+      <span>Paste it below and save.</span>
+    </li>
+  </ol>
+
+  <div class="border-t border-navy-200 pt-4">
+    <p class="text-sm text-navy-700">
+      <strong>What this costs:</strong> there's no subscription or free tier —
+      you pay only for what you use. For normal use (a plan update every
+      couple of weeks, daily activity reactions, occasional chat) that's
+      roughly <strong>$2–4/month</strong>. You can set a monthly spend limit
+      under <strong>Settings → Limits</strong> on the Anthropic Console so you're
+      never surprised.
+    </p>
+  </div>
+</div>

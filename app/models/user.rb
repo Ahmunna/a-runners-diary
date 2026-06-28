@@ -11,6 +11,7 @@ class User < ApplicationRecord
   has_many :nutrition_logs, dependent: :destroy
   has_many :messages, dependent: :destroy
   has_many :strava_activities, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
 
   validates :first_name, :last_name, presence: true
   validates :role, inclusion: { in: ROLES }

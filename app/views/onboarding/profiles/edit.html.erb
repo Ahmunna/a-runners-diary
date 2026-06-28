@@ -1,0 +1,72 @@
+<% content_for :title, "Profile & coaching preferences" %>
+
+<h1 class="text-2xl font-bold mb-6">Profile & coaching preferences</h1>
+
+<div class="max-w-xl space-y-6">
+  <div class="card">
+    <%= form_with model: @athlete_profile, url: onboarding_profile_path, method: :patch, class: "space-y-5" do |f| %>
+      <% if @athlete_profile.errors.any? %>
+        <div class="field-error">
+          <ul class="list-disc pl-5">
+            <% @athlete_profile.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <%= f.label :age, class: "field-label" %>
+          <%= f.number_field :age, class: "field-input" %>
+        </div>
+        <div>
+          <%= f.label :height_cm, "Height (cm)", class: "field-label" %>
+          <%= f.number_field :height_cm, class: "field-input" %>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :sex, class: "field-label" %>
+        <%= f.select :sex, AthleteProfile::SEXES, { prompt: "Select" }, class: "field-input" %>
+      </div>
+
+      <div>
+        <%= f.label :notes, "Anything else Claude should know?", class: "field-label" %>
+        <%= f.text_area :notes, rows: 6, class: "field-input" %>
+      </div>
+
+      <div>
+        <%= f.label :timezone, "Your timezone", class: "field-label" %>
+        <%= f.time_zone_select :timezone, [], { default: "Paris", include_blank: false }, class: "field-input" %>
+        <p class="field-hint">Used to time your daily coach check-in correctly.</p>
+      </div>
+
+      <div class="border-t border-navy-100 pt-5">
+        <p class="field-label mb-3">When should your coach automatically review your plan?</p>
+
+        <label class="flex items-start gap-3 mb-3">
+          <%= f.check_box :review_on_chat, class: "mt-1 rounded border-navy-300 text-navy-700 focus:ring-navy-300" %>
+          <span class="text-sm text-navy-700">
+            <span class="font-medium text-navy-900">After every chat message</span><br>
+            More reactive, but means more Claude calls (and cost) per day.
+          </span>
+        </label>
+
+        <label class="flex items-start gap-3">
+          <%= f.check_box :review_on_nutrition_log, class: "mt-1 rounded border-navy-300 text-navy-700 focus:ring-navy-300" %>
+          <span class="text-sm text-navy-700">
+            <span class="font-medium text-navy-900">After every nutrition log</span><br>
+            Your coach re-checks your plan each time you log a meal.
+          </span>
+        </label>
+
+        <p class="field-hint mt-3">
+          A new Strava activity and your daily 9am check-in always trigger a review — these two are optional on top of that.
+        </p>
+      </div>
+
+      <%= f.submit "Save", class: "btn-primary" %>
+    <% end %>
+  </div>
+</div>

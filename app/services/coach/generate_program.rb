@@ -23,7 +23,7 @@ module Coach
 
       plan = JsonExtraction.parse(response)
 
-      ActiveRecord::Base.transaction do
+      program = ActiveRecord::Base.transaction do
         race.training_programs.where(status: "active").update_all(status: "superseded")
 
         program = race.training_programs.create!(
@@ -38,6 +38,10 @@ module Coach
 
         program
       end
+
+      PushNotificationService.notify(user, title: "Your training program is ready", body: plan["summary"].to_s.truncate(150))
+
+      program
     end
 
     private

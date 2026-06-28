@@ -11,6 +11,7 @@ class NutritionLogsController < ApplicationController
     @nutrition_log = current_user.nutrition_logs.new(nutrition_log_params)
 
     if @nutrition_log.save
+      trigger_review_if_enabled
       redirect_to nutrition_logs_path, notice: "Logged."
     else
       render :new, status: :unprocessable_entity
@@ -32,6 +33,12 @@ class NutritionLogsController < ApplicationController
   end
 
   private
+
+  def trigger_review_if_enabled
+    return unless current_user.athlete_profile&.review_on_nutrition_log?
+
+    Coach::ReactToActivityJob.perform_later(current_user.id, "Athlete logged a meal — review nutrition against current training load.")
+  end
 
   def nutrition_log_params
     params.require(:nutrition_log).permit(:date, :calories, :protein_g, :carbs_g, :fat_g, :notes)

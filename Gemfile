@@ -31,6 +31,9 @@ gem "solid_queue"
 gem "faraday"
 gem "faraday-retry"
 
+# Web Push notifications (mobile PWA)
+gem "web-push"
+
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
 

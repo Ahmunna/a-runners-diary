@@ -16,8 +16,17 @@ production:
   check_missed_training_days:
     class: Coach::CheckMissedDaysJob
     schedule: every day at 11pm
+  ensure_strava_webhook_subscription:
+    class: Strava::EnsureWebhookSubscriptionJob
+    schedule: every day at 3am
+  daily_checkin_sweep:
+    class: Coach::DailyCheckInSweepJob
+    schedule: every hour
 
 development:
   check_missed_training_days:
     class: Coach::CheckMissedDaysJob
     schedule: every day at 11pm
+  daily_checkin_sweep:
+    class: Coach::DailyCheckInSweepJob
+    schedule: every hour

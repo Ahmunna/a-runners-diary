@@ -22,6 +22,14 @@ AthleteProfile
   belongs_to :user
   age:integer, sex:string, height_cm:integer
   notes:text                    # free-text, read by Claude as context
+  timezone:string               # ActiveSupport::TimeZone name, used for the 9am check-in
+  last_daily_checkin_on:date    # idempotency marker for the hourly sweep
+  review_on_chat:boolean        # opt-in: re-adapt plan after every chat message
+  review_on_nutrition_log:boolean # opt-in: re-adapt plan after every nutrition log
+
+PushSubscription
+  belongs_to :user
+  endpoint:text (unique), p256dh:string, auth:string   # one row per subscribed browser/device
 
 ClaudeCredential
   belongs_to :user
@@ -35,7 +43,7 @@ StravaConnection
 
 Race
   belongs_to :user
-  race_type:string   # 5k | 10k | half_marathon | marathon
+  race_type:string   # 5k | 10k | half_marathon | marathon | hyrox
   race_date:date
   time_objective:string   # e.g. "01:50:00"
   difficulty:string  # beginner | intermediate | advanced
@@ -97,6 +105,40 @@ athlete authorizes that single app via standard OAuth2:
 5. A daily scheduled job (`Coach::CheckMissedDaysJob`) walks
    `TrainingDay` rows with no matching activity past their date and marks
    them `skipped`, then triggers re-adaptation.
+6. `Strava::EnsureWebhookSubscription` checks (`GET`) before creating
+   (`POST`) — Strava allows exactly one subscription per app, so this is
+   safe to call repeatedly. It runs once async on `rails server` boot
+   (guarded by `defined?(Rails::Server)` so it never fires for rake tasks,
+   console, or the migration release step) and again daily as a self-heal
+   sweep, in case the subscription is ever deleted on Strava's side.
+
+## Adaptation triggers
+
+`Coach::ReactToActivityJob` is the single entry point for "something
+happened, re-check the plan." It's triggered by:
+
+- A new Strava activity (always on — `Strava::ProcessActivityJob`).
+- A missed training day (always on — nightly `Coach::CheckMissedDaysJob`).
+- The athlete's local 9am, every day (always on — see below).
+- A chat message (opt-in, `AthleteProfile#review_on_chat`).
+- A nutrition log (opt-in, `AthleteProfile#review_on_nutrition_log`).
+- Tapping "Ask coach to review now" on the dashboard (`CoachReviewsController`).
+
+The two opt-in triggers default to `false` — every chat message or meal log
+triggering a Claude call multiplies cost and can make the plan feel like
+it's changing too often. Athletes turn them on in
+`/onboarding/profile/edit` if they want a more reactive coach.
+
+### Per-athlete daily check-in (no per-user cron)
+
+There's no per-user cron in Solid Queue's recurring scheduler — it's one
+static schedule for the whole app. `Coach::DailyCheckInSweepJob` runs every
+hour instead: each athlete's local hour advances by exactly one every time
+the sweep runs, so it crosses their local 9am exactly once per day. The
+job checks `AthleteProfile#local_hour_now == 9` and
+`AthleteProfile#checked_in_today?` (backed by `last_daily_checkin_on`) to
+fire exactly once and skip everyone else. An athlete with no `timezone` set
+falls back to UTC (`AthleteProfile#time_zone`) rather than being skipped.
 
 ## Claude integration
 
@@ -122,12 +164,43 @@ If an athlete's Claude key is missing/invalid, dashboard actions that need
 Claude show an inline error asking them to add a valid key in settings —
 the rest of the app (Strava sync, manual logging) keeps working.
 
+## Push notifications (PWA)
+
+`PushNotificationService.notify(user, title:, body:)` sends a Web Push
+message to every `PushSubscription` a user has, using free VAPID-based
+push (no APNs/FCM account, no per-message cost) via the `web-push` gem.
+Fired once, in v1, on "new coach summary ready" — inside
+`Coach::GenerateProgram` and `Coach::ReactToActivity` after
+`claude_summary` is updated. A delivery failure (expired subscription,
+malformed keys, network error) is always caught and logged inside
+`PushNotificationService` — it must never bubble up into the calling
+Coach service, since the notification is a side effect and the plan
+update is the part that actually matters.
+
+Subscribing happens client-side: `app/javascript/controllers/push_subscription_controller.js`
+registers `app/views/pwa/service-worker.js`, requests notification
+permission, subscribes via `PushManager`, and posts the subscription
+(`endpoint`/`p256dh`/`auth`) to `PushSubscriptionsController`. The VAPID
+public key is injected into the dashboard via
+`Rails.application.config.x.vapid_public_key` (set from `VAPID_PUBLIC_KEY`
+in `config/initializers/web_push.rb`); the matching private key never
+leaves the server.
+
+iOS Safari only supports push for a PWA added to the home screen (no
+native install prompt like Android) — `ios_install_nudge_controller.js`
+shows a one-line banner with "Share → Add to Home Screen" instructions,
+detected via `navigator.standalone` / `matchMedia("(display-mode: standalone)")`,
+shown only to iOS Safari users who haven't installed it yet.
+
 ## Background jobs (Solid Queue)
 
 - `Strava::ProcessActivityJob`
+- `Strava::EnsureWebhookSubscriptionJob` (boot-time + daily self-heal)
 - `Coach::ReactToActivityJob`
 - `Coach::GenerateProgramJob`
 - `Coach::CheckMissedDaysJob` (scheduled daily via `config/recurring.yml`)
+- `Coach::DailyCheckInSweepJob` (scheduled hourly; fires per-athlete at
+  their local 9am — see Adaptation triggers above)
 
 ## Routing sketch
 

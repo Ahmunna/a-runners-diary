@@ -33,6 +33,16 @@
     <% end %>
   </div>
 
+  <% unless @claude_credential.persisted? && @claude_credential.api_key.present? %>
+    <%= render "setup_help" %>
+  <% end %>
+
+  <div class="card">
+    <h2 class="font-semibold mb-1">Profile & coaching preferences</h2>
+    <p class="text-sm text-navy-500 mb-4">Timezone, injuries/notes, and when your coach automatically reviews your plan.</p>
+    <%= link_to "Edit profile & preferences", edit_onboarding_profile_path, class: "btn-secondary" %>
+  </div>
+
   <div class="card">
     <h2 class="font-semibold mb-1">Account</h2>
     <p class="text-sm text-navy-500 mb-4">Update your email or password.</p>

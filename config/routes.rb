@@ -2,9 +2,13 @@ Rails.application.routes.draw do
   devise_for :users
 
   namespace :onboarding do
-    resource :profile, only: [ :new, :create ], controller: "profiles"
+    resource :profile, only: [ :new, :create, :edit, :update ], controller: "profiles"
     resource :race, only: [ :new, :create ], controller: "races"
   end
+
+  resource :coach_review, only: [ :create ], controller: "coach_reviews"
+  post "push_subscriptions", to: "push_subscriptions#create", as: :push_subscriptions
+  delete "push_subscriptions", to: "push_subscriptions#destroy", as: :destroy_push_subscriptions
 
   resource :dashboard, only: [ :show ], controller: "dashboard"
 

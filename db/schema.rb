@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_27_153158) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_29_091000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,6 +22,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_27_153158) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "timezone"
+    t.date "last_daily_checkin_on"
+    t.boolean "review_on_chat", default: false, null: false
+    t.boolean "review_on_nutrition_log", default: false, null: false
     t.index ["user_id"], name: "index_athlete_profiles_on_user_id", unique: true
   end
 
@@ -54,6 +58,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_27_153158) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "date"], name: "index_nutrition_logs_on_user_id_and_date", unique: true
     t.index ["user_id"], name: "index_nutrition_logs_on_user_id"
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "endpoint", null: false
+    t.string "p256dh", null: false
+    t.string "auth", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
   create_table "races", force: :cascade do |t|
@@ -251,6 +266,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_27_153158) do
   add_foreign_key "claude_credentials", "users"
   add_foreign_key "messages", "users"
   add_foreign_key "nutrition_logs", "users"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "races", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

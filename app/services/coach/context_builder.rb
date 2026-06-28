@@ -13,7 +13,7 @@ module Coach
 
     def system_prompt
       <<~PROMPT
-        You are an experienced, demanding running coach writing directly to your athlete.
+        You are an experienced, demanding #{coach_specialty} writing directly to your athlete.
         You have access to their profile, race goal, recent Strava activity, nutrition
         logs, and training program below. Be specific and reference real numbers from
         this context rather than generic advice. Match your tone to their chosen
@@ -32,6 +32,10 @@ module Coach
     private
 
     attr_reader :user
+
+    def coach_specialty
+      user.race&.hyrox? ? "hybrid running + functional fitness coach" : "running coach"
+    end
 
     def athlete_section
       profile = user.athlete_profile
@@ -56,7 +60,21 @@ module Coach
         Race: #{race.distance_label} on #{race.race_date}
         Target time: #{race.time_objective.presence || "not specified"}
         Difficulty level: #{race.difficulty}
+        #{hyrox_structure_note if race.hyrox?}
       SECTION
+    end
+
+    def hyrox_structure_note
+      <<~NOTE
+        Hyrox format: 8x 1km runs alternating with 8 functional stations, in
+        order — ski erg (1000m), sled push (50m), sled pull (50m), burpee
+        broad jumps (80m), rowing (1000m), farmers carry (200m), sandbag
+        lunges (100m), wall balls (75/100 reps). Training days should mix
+        running volume with station-specific strength/conditioning work
+        (compromised running after stations, sled work, grip/carry
+        endurance) — don't just write a generic running plan and call it
+        Hyrox prep.
+      NOTE
     end
 
     def program_section

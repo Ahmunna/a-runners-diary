@@ -43,6 +43,12 @@
         <%= f.text_area :notes, rows: 6, placeholder: "Injuries, context, goals beyond the race...", class: "field-input" %>
       </div>
 
+      <div>
+        <%= f.label :timezone, "Your timezone", class: "field-label" %>
+        <%= f.time_zone_select :timezone, [], { default: "Paris", include_blank: false }, class: "field-input" %>
+        <p class="field-hint">Used to time your daily coach check-in correctly.</p>
+      </div>
+
       <%= f.submit "Continue", class: "btn-primary w-full" %>
     <% end %>
   </div>

@@ -2,7 +2,7 @@ class Race < ApplicationRecord
   belongs_to :user
   has_many :training_programs, dependent: :destroy
 
-  TYPES = %w[5k 10k half_marathon marathon].freeze
+  TYPES = %w[5k 10k half_marathon marathon hyrox].freeze
   DIFFICULTIES = %w[beginner intermediate advanced].freeze
 
   validates :race_type, inclusion: { in: TYPES }
@@ -15,7 +15,11 @@ class Race < ApplicationRecord
   end
 
   def distance_label
-    { "5k" => "5K", "10k" => "10K", "half_marathon" => "Half Marathon", "marathon" => "Marathon" }.fetch(race_type, race_type)
+    { "5k" => "5K", "10k" => "10K", "half_marathon" => "Half Marathon", "marathon" => "Marathon", "hyrox" => "Hyrox" }.fetch(race_type, race_type)
+  end
+
+  def hyrox?
+    race_type == "hyrox"
   end
 
   private
