@@ -24,7 +24,8 @@ class StravaConnectionsController < ApplicationController
       expires_at: Time.at(data["expires_at"])
     )
 
-    redirect_to dashboard_path, notice: "Strava connected."
+    Strava::SyncActivitiesJob.perform_later(current_user.id)
+    redirect_to dashboard_path, notice: "Strava connected — pulling in your recent activity history now."
   rescue Strava::Client::Error => e
     redirect_to dashboard_path, alert: "Strava connection failed: #{e.message}"
   end

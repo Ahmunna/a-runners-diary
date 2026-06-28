@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   get "strava/connect", to: "strava_connections#connect", as: :strava_connect
   get "strava/callback", to: "strava_connections#callback", as: :strava_callback
   match "strava/webhook", to: "strava_webhooks#create", via: [ :get, :post ], as: :strava_webhook
+  resource :strava_sync, only: [ :create ], controller: "strava_syncs"
 
   resource :claude_credential, only: [ :new, :create, :edit, :update ]
 

@@ -1,0 +1,44 @@
+<div class="card mb-6"
+     data-controller="notifications-setup"
+     data-notifications-setup-vapid-public-key-value="<%= Rails.application.config.x.vapid_public_key %>">
+
+  <div data-notifications-setup-target="installStep" class="hidden">
+    <div class="flex items-center gap-2 mb-3">
+      <svg class="w-5 h-5 text-navy-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4M4 16v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
+      <h2 class="font-semibold">Get notified when your coach updates your plan</h2>
+    </div>
+    <p class="text-sm text-navy-600 mb-3">On iPhone, this only works once you've added the app to your home screen:</p>
+    <ol class="space-y-2 text-sm text-navy-700 list-decimal pl-5">
+      <li>
+        Tap the <strong>Share</strong> icon
+        <svg class="w-4 h-4 inline-block align-text-bottom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4M4 16v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
+        at the bottom of Safari
+      </li>
+      <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+      <li>Tap <strong>"Add"</strong> in the top right</li>
+      <li>Open <strong>Runner's Diary</strong> from the new icon on your home screen — not from Safari</li>
+      <li>Come back to this page and tap "Enable notifications"</li>
+    </ol>
+  </div>
+
+  <div data-notifications-setup-target="enableStep" class="hidden">
+    <div class="flex items-center gap-2 mb-3">
+      <svg class="w-5 h-5 text-navy-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4M4 16v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
+      <h2 class="font-semibold">Get notified when your coach updates your plan</h2>
+    </div>
+    <p class="text-sm text-navy-600 mb-3">You're all set up — turn on notifications to get pinged the moment your plan changes.</p>
+    <button type="button" class="btn-primary" data-action="click->notifications-setup#subscribe">Enable notifications</button>
+  </div>
+
+  <div data-notifications-setup-target="enabled" class="hidden flex items-center justify-between">
+    <p class="text-sm text-emerald-700 flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+      Notifications are on
+    </p>
+    <button type="button" class="text-sm text-navy-500 hover:underline" data-action="click->notifications-setup#unsubscribe">Turn off</button>
+  </div>
+
+  <div data-notifications-setup-target="unsupported" class="hidden">
+    <p class="text-sm text-navy-500">Push notifications aren't supported in this browser.</p>
+  </div>
+</div>

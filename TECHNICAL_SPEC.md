@@ -93,7 +93,9 @@ athlete authorizes that single app via standard OAuth2:
 1. `GET /strava/connect` → redirect to Strava's authorize URL with scope
    `activity:read_all`.
 2. Strava redirects back to `GET /strava/callback?code=...` → exchange code
-   for access/refresh tokens → store on `StravaConnection`.
+   for access/refresh tokens → store on `StravaConnection` → enqueues
+   `Strava::SyncActivitiesJob` to immediately backfill recent history
+   (same job as the manual "sync now" button below).
 3. One webhook subscription for the whole app (Strava only allows one per
    application) receives `create`/`update` events for *all* authorized
    athletes. `POST /strava/webhook` validates the event, enqueues
@@ -111,6 +113,15 @@ athlete authorizes that single app via standard OAuth2:
    (guarded by `defined?(Rails::Server)` so it never fires for rake tasks,
    console, or the migration release step) and again daily as a self-heal
    sweep, in case the subscription is ever deleted on Strava's side.
+7. `Strava::SyncActivities` (`Strava::Client#list_activities`, most recent
+   30) backs both the auto-backfill on connect and the dashboard's manual
+   "sync now" button (`POST /strava_sync`) — catch-up if a webhook event
+   was ever missed. It dedupes against existing `StravaActivity#strava_id`
+   rows and fires **at most one** `Coach::ReactToActivityJob` for the whole
+   batch, not one per activity — a backfill can pull in dozens of
+   activities at once, and reacting to each individually would multiply
+   Claude cost and could fire a flurry of push notifications for old
+   history.
 
 ## Adaptation triggers
 
@@ -196,6 +207,7 @@ shown only to iOS Safari users who haven't installed it yet.
 
 - `Strava::ProcessActivityJob`
 - `Strava::EnsureWebhookSubscriptionJob` (boot-time + daily self-heal)
+- `Strava::SyncActivitiesJob` (on connect + manual "sync now" button)
 - `Coach::ReactToActivityJob`
 - `Coach::GenerateProgramJob`
 - `Coach::CheckMissedDaysJob` (scheduled daily via `config/recurring.yml`)

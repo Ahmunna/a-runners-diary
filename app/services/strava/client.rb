@@ -47,6 +47,14 @@ module Strava
       JSON.parse(response.body)
     end
 
+    def list_activities(per_page: 30)
+      ensure_fresh_token!
+      response = http.get("#{API_BASE_URL}/athlete/activities", per_page: per_page)
+      raise Error, "Strava activity list failed (#{response.status}): #{response.body}" unless response.success?
+
+      JSON.parse(response.body)
+    end
+
     private
 
     attr_reader :connection
