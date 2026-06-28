@@ -130,15 +130,33 @@ happened, re-check the plan." It's triggered by:
 
 - A new Strava activity (always on — `Strava::ProcessActivityJob`).
 - A missed training day (always on — nightly `Coach::CheckMissedDaysJob`).
-- The athlete's local 9am, every day (always on — see below).
 - A chat message (opt-in, `AthleteProfile#review_on_chat`).
 - A nutrition log (opt-in, `AthleteProfile#review_on_nutrition_log`).
-- Tapping "Ask coach to review now" on the dashboard (`CoachReviewsController`).
+- The athlete's local 9am, every day — **but only if `TrainingProgram#review_worthwhile?`**.
+- Tapping "Check for updates" on the dashboard (`StravaSyncsController` →
+  `Strava::SyncActivities`) — same `review_worthwhile?` gate.
 
 The two opt-in triggers default to `false` — every chat message or meal log
 triggering a Claude call multiplies cost and can make the plan feel like
 it's changing too often. Athletes turn them on in
 `/onboarding/profile/edit` if they want a more reactive coach.
+
+### Don't review when there's nothing to review
+
+The first version of the daily check-in and the manual button both called
+`Coach::ReactToActivity` unconditionally — with no new Strava activity or
+nutrition log to react to, Claude had nothing to say except a low-value
+"you gave me nothing to work with" message, which **overwrote** a
+perfectly good existing `claude_summary`. The fix is
+`TrainingProgram#review_worthwhile?` = `new_data_since_last_review?` (any
+`StravaActivity`/`NutritionLog` created after `claude_summary` was last
+written) `|| needs_extending?` (fewer than `MIN_PENDING_DAYS_BUFFER`
+pending days left — the schedule itself can need topping up independent
+of whether anything "happened"). Triggers that are *themselves* new
+information (a Strava activity arriving, a chat message, a nutrition log)
+skip this gate — they're inherently worth reacting to. Only the two
+triggers that fire on a timer/on click without their own justification
+(daily check-in, manual button) are gated by it.
 
 ### Per-athlete daily check-in (no per-user cron)
 
@@ -148,7 +166,8 @@ hour instead: each athlete's local hour advances by exactly one every time
 the sweep runs, so it crosses their local 9am exactly once per day. The
 job checks `AthleteProfile#local_hour_now == 9` and
 `AthleteProfile#checked_in_today?` (backed by `last_daily_checkin_on`) to
-fire exactly once and skip everyone else. An athlete with no `timezone` set
+fire exactly once and skip everyone else, then `review_worthwhile?` to
+decide whether to actually call Claude. An athlete with no `timezone` set
 falls back to UTC (`AthleteProfile#time_zone`) rather than being skipped.
 
 ## Claude integration
@@ -158,10 +177,19 @@ the athlete's own `ClaudeCredential#api_key` — never an app-level key.
 Three entry points, all building a context-rich prompt:
 
 - `Coach::GenerateProgram` — builds the initial `TrainingProgram` +
-  `TrainingDay` rows from profile + race + recent Strava history.
+  `TrainingDay` rows from profile + race + recent Strava history, starting
+  **today** (not tomorrow — an earlier version left day one permanently
+  empty on the dashboard).
 - `Coach::ReactToActivity` — given a new `StravaActivity` (or a skipped
-  day), asks Claude to update `claude_summary` and optionally rewrite
-  upcoming `TrainingDay#workout` entries.
+  day), asks Claude to update `claude_summary`, optionally rewrite
+  upcoming `TrainingDay#workout` entries (`updates`), and — if fewer than
+  `MIN_PENDING_DAYS_BUFFER` (5) pending days remain — schedule new ones
+  (`additions`) to keep at least `EXTEND_TO_DAYS` (10) days of runway,
+  never past race day. This is the *only* refill mechanism for the
+  program: every trigger (Strava sync, daily 9am check-in, manual "check
+  for updates", opt-in chat/nutrition triggers) shares this one code path,
+  so the schedule tops itself up automatically instead of running dry
+  after the initial `GenerateProgram` window.
 - `Coach::Chat` — free-form conversation; appends to `Message` history and
   includes recent program/activity/nutrition context in the system prompt.
 

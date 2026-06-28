@@ -89,7 +89,7 @@ module Coach
         Generated: #{program.generated_at}
         Latest coach summary: #{program.claude_summary.presence || "none yet"}
         Next 7 scheduled days:
-        #{lines.join("\n")}
+        #{lines.any? ? lines.join("\n") : "(none scheduled — the program has run out and needs extending)"}
       SECTION
     end
 

@@ -5,6 +5,6 @@ class StravaSyncsController < ApplicationController
     end
 
     Strava::SyncActivitiesJob.perform_later(current_user.id)
-    redirect_to dashboard_path, notice: "Syncing your recent Strava activities — refresh in a moment."
+    redirect_to dashboard_path, notice: "Checking Strava and your nutrition logs for anything new — your coach will only weigh in if there's actually something to react to."
   end
 end

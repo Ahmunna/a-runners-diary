@@ -11,4 +11,28 @@ class TrainingProgram < ApplicationRecord
   def today
     training_days.find_by(date: Date.current)
   end
+
+  # Whether anything has happened since claude_summary was last written
+  # that's actually worth asking Claude to react to. Used to gate every
+  # trigger that isn't itself inherently new information (the daily
+  # check-in, the manual "check for updates" button) — without this,
+  # those fire on schedule/on click regardless of whether there's
+  # anything new, and Claude ends up writing a low-value "you gave me
+  # nothing to work with" message that overwrites a perfectly good
+  # existing summary.
+  def new_data_since_last_review?
+    user = race.user
+    user.strava_activities.where("created_at > ?", updated_at).exists? ||
+      user.nutrition_logs.where("created_at > ?", updated_at).exists?
+  end
+
+  # Independent of whether anything new happened — the schedule itself
+  # might just be running low and need topping up.
+  def needs_extending?
+    training_days.where(status: "pending").where("date >= ?", Date.current).count < Coach::ReactToActivity::MIN_PENDING_DAYS_BUFFER
+  end
+
+  def review_worthwhile?
+    new_data_since_last_review? || needs_extending?
+  end
 end

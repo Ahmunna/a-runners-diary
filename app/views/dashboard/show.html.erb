@@ -83,16 +83,9 @@
   </section>
 
   <section class="card">
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-navy-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z" /></svg>
-        <h2 class="font-semibold">Recent activities</h2>
-      </div>
-      <% if current_user.strava_connection %>
-        <%= button_to strava_sync_path, method: :post, class: "text-navy-500 hover:text-navy-700 cursor-pointer bg-transparent border-0 p-0", title: "Sync now", "aria-label": "Sync Strava activities now" do %>
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5" /></svg>
-        <% end %>
-      <% end %>
+    <div class="flex items-center gap-2 mb-3">
+      <svg class="w-5 h-5 text-navy-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z" /></svg>
+      <h2 class="font-semibold">Recent activities</h2>
     </div>
     <% if @recent_activities.any? %>
       <ul class="text-sm text-navy-800 space-y-1.5">
@@ -112,10 +105,10 @@
     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
   <% end %>
 
-  <% if current_user.claude_credential %>
-    <%= button_to coach_review_path, method: :post, class: "btn-ghost" do %>
+  <% if current_user.strava_connection %>
+    <%= button_to strava_sync_path, method: :post, class: "btn-ghost" do %>
       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5" /></svg>
-      Ask coach to review now
+      Check for updates
     <% end %>
   <% end %>
 </div>

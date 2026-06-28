@@ -14,6 +14,10 @@ module Coach
         next unless profile.local_hour_now == CHECK_IN_HOUR
 
         profile.update!(last_daily_checkin_on: profile.time_zone.today)
+
+        program = profile.user.race.active_program
+        next unless program&.review_worthwhile?
+
         Coach::ReactToActivityJob.perform_later(profile.user_id, "Daily 9am check-in.")
       end
     end

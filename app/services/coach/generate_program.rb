@@ -51,7 +51,8 @@ module Coach
     def prompt
       <<~PROMPT
         Generate the first #{PLANNING_HORIZON_DAYS} days of this athlete's training
-        program, starting tomorrow (#{Date.tomorrow}). The plan should match their
+        program, starting today (#{Date.current}) — today should have a real
+        scheduled day too, not be skipped. The plan should match their
         chosen difficulty level and build toward their race goal above.
 
         Respond with ONLY valid JSON, no markdown fences, in this exact shape:

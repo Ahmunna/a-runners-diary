@@ -6,7 +6,6 @@ Rails.application.routes.draw do
     resource :race, only: [ :new, :create ], controller: "races"
   end
 
-  resource :coach_review, only: [ :create ], controller: "coach_reviews"
   post "push_subscriptions", to: "push_subscriptions#create", as: :push_subscriptions
   delete "push_subscriptions", to: "push_subscriptions#destroy", as: :destroy_push_subscriptions
 
