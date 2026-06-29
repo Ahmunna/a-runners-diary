@@ -40,7 +40,20 @@ export default class extends Controller {
 
     this.registration = await navigator.serviceWorker.register("/service-worker.js")
     const subscription = await this.registration.pushManager.getSubscription()
-    this.show(subscription ? this.enabledTarget : this.enableStepTarget)
+
+    if (subscription) {
+      // The browser's subscription is tied to this origin, not to our
+      // account model — if a previous account on this device was deleted,
+      // its PushSubscription row went with it, but the browser still
+      // holds the same subscription object and getSubscription() still
+      // returns it. Re-post it so the *current* account actually has a
+      // row, instead of trusting client-side state alone and showing
+      // "enabled" while no notification can ever reach this account.
+      await this.postSubscription(subscription)
+      this.show(this.enabledTarget)
+    } else {
+      this.show(this.enableStepTarget)
+    }
   }
 
   async subscribe() {
@@ -52,14 +65,17 @@ export default class extends Controller {
       applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKeyValue)
     })
 
+    await this.postSubscription(subscription)
+    this.show(this.enabledTarget)
+  }
+
+  async postSubscription(subscription) {
     const json = subscription.toJSON()
     await fetch("/push_subscriptions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken },
       body: JSON.stringify({ endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth })
     })
-
-    this.show(this.enabledTarget)
   }
 
   async unsubscribe() {

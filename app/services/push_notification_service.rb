@@ -9,12 +9,18 @@ class PushNotificationService
     private_key: ENV.fetch("VAPID_PRIVATE_KEY", nil)
   }.freeze
 
+  # Returns true if at least one device was actually notified, false if
+  # there was nothing to do (no VAPID keys configured, or this athlete
+  # has never enabled notifications) — lets callers like the admin panel
+  # give an honest "nothing was sent" instead of a false "sent!".
   def self.notify(user, title:, body:)
-    return if VAPID[:public_key].blank? || VAPID[:private_key].blank?
+    return false if VAPID[:public_key].blank? || VAPID[:private_key].blank?
+    return false if user.push_subscriptions.none?
 
     user.push_subscriptions.find_each do |subscription|
       deliver(subscription, title: title, body: body)
     end
+    true
   end
 
   def self.deliver(subscription, title:, body:)

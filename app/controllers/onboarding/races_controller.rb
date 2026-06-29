@@ -5,12 +5,18 @@ class Onboarding::RacesController < ApplicationController
 
   def create
     @race = current_user.race || current_user.build_race
+    was_new_race = @race.new_record?
     had_active_program = @race.active_program.present?
     @race.assign_attributes(race_params)
 
     if @race.save
       notify_coach(had_active_program)
-      redirect_to dashboard_path, notice: "Goal set. Connect Strava and add your Claude API key to generate your training program."
+
+      if was_new_race
+        redirect_to onboarding_app_setup_path, notice: "Goal set."
+      else
+        redirect_to dashboard_path, notice: "Race updated."
+      end
     else
       render :new, status: :unprocessable_entity
     end

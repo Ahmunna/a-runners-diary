@@ -16,7 +16,7 @@ module Coach
 
       user_message = user.messages.create!(role: "user", content: content)
 
-      history = user.messages.order(created_at: :desc).limit(HISTORY_LIMIT).order(created_at: :asc)
+      history = user.messages.order(created_at: :desc).limit(HISTORY_LIMIT).to_a.reverse
       claude_messages = history.map { |m| { role: m.role, content: m.content } }
 
       response = Coach::Client.new(user.claude_credential.api_key).call(

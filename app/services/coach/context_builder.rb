@@ -6,6 +6,7 @@ module Coach
   class ContextBuilder
     RECENT_ACTIVITIES_COUNT = 10
     RECENT_NUTRITION_DAYS = 7
+    RECENT_MESSAGES_COUNT = 10
 
     def initialize(user)
       @user = user
@@ -15,17 +16,19 @@ module Coach
       <<~PROMPT
         You are an experienced, demanding #{coach_specialty} writing directly to your athlete.
         You have access to their profile, race goal, recent Strava activity, nutrition
-        logs, and training program below. Be specific and reference real numbers from
-        this context rather than generic advice. Match your tone to their chosen
-        difficulty level: beginner athletes get encouragement and caution, advanced
-        athletes get pushed hard and should not be let off easy unless the data shows
-        real injury or overtraining risk.
+        logs, recent chat with you, and training program below. Be specific and
+        reference real numbers (and anything they've told you directly) rather than
+        generic advice. Match your tone to their chosen difficulty level: beginner
+        athletes get encouragement and caution, advanced athletes get pushed hard and
+        should not be let off easy unless the data shows real injury or overtraining
+        risk.
 
         #{athlete_section}
         #{race_section}
         #{program_section}
         #{activities_section}
         #{nutrition_section}
+        #{messages_section}
       PROMPT
     end
 
@@ -106,9 +109,22 @@ module Coach
         ## Current training program
         Generated: #{program.generated_at}
         Latest coach summary: #{program.claude_summary.presence || "none yet"}
+        #{roadmap_lines(program)}
         Next 7 scheduled days:
         #{lines.any? ? lines.join("\n") : "(none scheduled — the program has run out and needs extending)"}
       SECTION
+    end
+
+    def roadmap_lines(program)
+      weeks = program.training_weeks.ordered
+      return "Weekly roadmap: none yet — needs generating." if weeks.empty?
+
+      lines = weeks.map do |w|
+        marker = w.current? ? " <- current week" : ""
+        "- Week #{w.week_number} (#{w.start_date} to #{w.end_date}): #{w.phase_label}, ~#{w.target_distance_km || "?"}km#{", #{w.focus}" if w.focus.present?}#{marker}"
+      end
+
+      "Weekly roadmap (#{weeks.size} weeks to race day):\n#{lines.join("\n")}"
     end
 
     def activities_section
@@ -133,6 +149,18 @@ module Coach
 
       <<~SECTION
         ## Recent nutrition logs
+        #{lines.join("\n")}
+      SECTION
+    end
+
+    def messages_section
+      messages = user.messages.order(created_at: :desc).limit(RECENT_MESSAGES_COUNT).to_a.reverse
+      return "## Recent chat with athlete\nNo messages yet." if messages.empty?
+
+      lines = messages.map { |m| "- #{m.role}: #{m.content}" }
+
+      <<~SECTION
+        ## Recent chat with athlete (oldest first)
         #{lines.join("\n")}
       SECTION
     end

@@ -30,6 +30,7 @@
 
           <div class="hidden md:flex items-center gap-1 sm:gap-2 text-sm">
             <%= link_to "Dashboard", dashboard_path, class: "nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if current_page?(dashboard_path)}" %>
+            <%= link_to "Roadmap", roadmap_path, class: "nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'roadmap'}" %>
             <%= link_to "Nutrition", nutrition_logs_path, class: "nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'nutrition_logs'}" %>
             <%= link_to "Coach chat", messages_path, class: "nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'messages'}" %>
             <%= link_to "Settings", edit_claude_credential_path, class: "nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'claude_credentials'}" %>
@@ -47,6 +48,7 @@
 
         <div class="md:hidden hidden border-t border-navy-800 px-4 sm:px-6 py-3 space-y-1 text-sm" data-mobile-menu-target="panel">
           <%= link_to "Dashboard", dashboard_path, class: "block nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if current_page?(dashboard_path)}" %>
+          <%= link_to "Roadmap", roadmap_path, class: "block nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'roadmap'}" %>
           <%= link_to "Nutrition", nutrition_logs_path, class: "block nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'nutrition_logs'}" %>
           <%= link_to "Coach chat", messages_path, class: "block nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'messages'}" %>
           <%= link_to "Settings", edit_claude_credential_path, class: "block nav-link px-3 py-2 rounded-md #{'bg-navy-800 text-white' if controller_name == 'claude_credentials'}" %>

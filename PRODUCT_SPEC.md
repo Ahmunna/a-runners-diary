@@ -30,13 +30,28 @@ Athletes (friends-and-family beta, invite-only for now) and one admin role
    step. We pull recent activity history immediately after connecting to
    assess current fitness level, so the very first coach summary is
    already informed by real training data instead of starting blind.
-5. **Add Claude API key** — athlete pastes their own Anthropic API key.
+5. **Get the app** — install to home screen + enable push notifications,
+   right after the race goal (step 3 of 3) and before reaching the
+   dashboard — not buried as a dashboard afterthought. Deliberately placed
+   *after* the athlete has stated their goal (so the permission prompt has
+   context: "you'll be notified when your coach reacts to your training")
+   rather than before onboarding, which tends to get worse grant rates.
+   This also means notifications are live in time for the very first
+   "your training program is ready" push, not just later ones.
+6. **Connect Strava** — OAuth authorization, required before the Claude key
+   step. We pull recent activity history immediately after connecting to
+   assess current fitness level, so the very first coach summary is
+   already informed by real training data instead of starting blind.
+7. **Add Claude API key** — athlete pastes their own Anthropic API key.
    Stored encrypted, never shown again in full (masked after entry).
-6. Program generation kicks off — first call to Claude using all of the
-   above context.
+8. Program generation kicks off — first call to Claude using all of the
+   above context, producing both the weekly roadmap and the first two
+   weeks of daily detail (see below).
 
 ## Daily experience (dashboard)
 
+- **Current week summary** — phase (base/build/peak/taper/race week) and
+  weekly distance target, linking to the full roadmap.
 - **Today's workout** from the active training program.
 - **Macro/nutrition suggestion** for the day, derived from the workout
   load and recent intake.
@@ -45,7 +60,23 @@ Athletes (friends-and-family beta, invite-only for now) and one admin role
 - **Log a meal** — calories + macros (protein/carbs/fat), free-text notes.
   Manual entry only for v1.
 - **Chat with Claude** — free-text conversation. The athlete can say "my
-  knee hurts" or "I felt great today" and Claude can react and adjust.
+  knee hurts" or "I felt great today" and Claude can react and adjust —
+  and this conversation is now part of what every future adaptation sees,
+  not just a side channel.
+
+## Race roadmap
+
+A dedicated page (linked from the nav and the dashboard's current-week
+card) showing every week from today to race day: phase, date range,
+target weekly distance, and a one-line focus, with the current week
+highlighted. Generated once alongside the initial program and
+automatically extended if it ever falls short of race day. Day-by-day
+detail is deliberately *not* shown this far out — only the next ~2 weeks
+have real daily workouts at any time, since the specifics further out are
+going to be rewritten anyway once there's real performance data for that
+week. The roadmap is the answer to "can I see my whole training block to
+race day" without paying for daily detail that won't survive contact with
+reality.
 
 ## Adaptation loop
 
@@ -75,6 +106,9 @@ overtraining or injury risk).
 - List all athletes, their active race, last activity sync date.
 - View an athlete's profile, program, and Claude conversation (for
   debugging during the friends-and-family phase).
+- Manually edit a customer's coach summary, or send them a custom push
+  notification — both with honest feedback (e.g. "nothing sent, this
+  athlete has no active subscription") rather than a false success message.
 - No billing in v1 (the app is free for now).
 
 ## Explicitly out of scope for v1
@@ -84,4 +118,5 @@ overtraining or injury risk).
 - Multiple simultaneous race goals
 - Automated nutrition tracking integrations (MyFitnessPal etc.) — manual
   entry only
-- Mobile app — responsive web only
+- Native App Store/Play Store app — installable PWA (push-capable, no
+  native binary) only

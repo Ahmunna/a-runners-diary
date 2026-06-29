@@ -56,6 +56,20 @@ TrainingProgram
   generated_at:datetime
   claude_summary:text        # latest "opinion" shown on dashboard
   has_many :training_days
+  has_many :training_weeks
+
+TrainingWeek
+  belongs_to :training_program
+  week_number:integer (unique per program)
+  start_date:date, end_date:date
+  phase:string   # base | build | peak | taper | race_week
+  target_distance_km:integer
+  focus:text                 # one-line description shown on the roadmap page
+  # Generated once for the full span to race day (GenerateProgram, capped at
+  # MAX_ROADMAP_WEEKS=30), extended by ReactToActivity if it ever falls short
+  # of race day. Daily detail (TrainingDay) stays lazily generated/extended
+  # as before — only the lightweight phase/volume roadmap covers the full
+  # horizon upfront.
 
 TrainingDay
   belongs_to :training_program
@@ -190,28 +204,43 @@ falls back to UTC (`AthleteProfile#time_zone`) rather than being skipped.
 the athlete's own `ClaudeCredential#api_key` — never an app-level key.
 Three entry points, all building a context-rich prompt:
 
-- `Coach::GenerateProgram` — builds the initial `TrainingProgram` +
-  `TrainingDay` rows from profile + race + recent Strava history, starting
-  **today** (not tomorrow — an earlier version left day one permanently
-  empty on the dashboard).
+- `Coach::GenerateProgram` — builds, in one call: (1) a `TrainingWeek`
+  roadmap covering every week from today to race day (phase + weekly
+  distance target + one-line focus — base → build → peak → taper →
+  race_week, capped at `MAX_ROADMAP_WEEKS` = 30 for very long lead times),
+  and (2) detailed `TrainingDay` rows for only the first
+  `PLANNING_HORIZON_DAYS` (14) days, starting **today** (not tomorrow — an
+  earlier version left day one permanently empty on the dashboard).
+  Daily detail is intentionally NOT generated for the full horizon
+  upfront — those days are going to be rewritten anyway once real
+  performance data exists for them, so committing to exact workout text
+  months out is wasted effort. The roadmap is cheap (one row per week) and
+  gives the "see the whole journey to race day" view without that cost.
 - `Coach::ReactToActivity` — given a new `StravaActivity` (or a skipped
   day), asks Claude to update `claude_summary`, optionally rewrite
-  upcoming `TrainingDay#workout` entries (`updates`), and — if fewer than
-  `MIN_PENDING_DAYS_BUFFER` (5) pending days remain — schedule new ones
-  (`additions`) to keep at least `EXTEND_TO_DAYS` (10) days of runway,
-  never past race day. This is the *only* refill mechanism for the
-  program: every trigger (Strava sync, daily 9am check-in, manual "check
-  for updates", opt-in chat/nutrition triggers) shares this one code path,
-  so the schedule tops itself up automatically instead of running dry
-  after the initial `GenerateProgram` window.
+  upcoming `TrainingDay#workout` entries (`updates`), schedule new days
+  (`additions`) once fewer than `MIN_PENDING_DAYS_BUFFER` (5) pending days
+  remain (keeping `EXTEND_TO_DAYS` (10) days of runway), and extend the
+  weekly roadmap (`week_additions`) if `TrainingProgram#roadmap_incomplete?`
+  (last week's `end_date` is before race day — e.g. the initial 30-week
+  cap was hit). This is the *only* refill mechanism for both the daily
+  schedule and the roadmap: every trigger (Strava sync, daily 9am
+  check-in, manual "check for updates", opt-in chat/nutrition triggers)
+  shares this one code path, so both top themselves up automatically
+  instead of running dry after `GenerateProgram`'s initial window.
 - `Coach::Chat` — free-form conversation; appends to `Message` history and
   includes recent program/activity/nutrition context in the system prompt.
 
 All three share a `Coach::ContextBuilder` that assembles: athlete profile
-notes, current race goal + difficulty, last N Strava activities (pace,
-distance, duration, heart rate if present), last N nutrition logs, and
-current program state. This keeps the "what does Claude know" logic in one
-place instead of duplicated per call site.
+notes, current race goal + difficulty, the full weekly roadmap (with the
+current week flagged), the next 7 days of daily detail, last N Strava
+activities (pace, distance, duration, heart rate if present), last N
+nutrition logs, and last N chat messages (in actual chronological order —
+an earlier version built history with `.order(desc).limit(n).order(asc)`,
+which doesn't re-sort a limited set, it just appends a second, dead ORDER
+BY clause to the same query; fixed to fetch-then-`.reverse` in Ruby, used
+in both `Coach::Chat` and here). This keeps the "what does Claude know"
+logic in one place instead of duplicated per call site.
 
 If an athlete's Claude key is missing/invalid, dashboard actions that need
 Claude show an inline error asking them to add a valid key in settings —
@@ -262,9 +291,11 @@ shown only to iOS Safari users who haven't installed it yet.
 /users/sign_up, /users/sign_in        (Devise)
 /onboarding/profile
 /onboarding/race
+/onboarding/app_setup                 (step 3 — install + notifications, first-time race creation only)
 /strava/connect, /strava/callback, /strava/webhook
 /settings/claude_credential
 /dashboard
+/roadmap                              (weekly periodization view)
 /nutrition_logs
 /messages
 /admin/users, /admin/users/:id

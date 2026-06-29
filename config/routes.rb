@@ -4,12 +4,14 @@ Rails.application.routes.draw do
   namespace :onboarding do
     resource :profile, only: [ :new, :create, :edit, :update ], controller: "profiles"
     resource :race, only: [ :new, :create ], controller: "races"
+    resource :app_setup, only: [ :show ], controller: "app_setup"
   end
 
   post "push_subscriptions", to: "push_subscriptions#create", as: :push_subscriptions
   delete "push_subscriptions", to: "push_subscriptions#destroy", as: :destroy_push_subscriptions
 
   resource :dashboard, only: [ :show ], controller: "dashboard"
+  resource :roadmap, only: [ :show ], controller: "roadmap"
 
   resource :strava_connection, only: [ :destroy ], controller: "strava_connections"
   get "strava/connect", to: "strava_connections#connect", as: :strava_connect
@@ -23,7 +25,12 @@ Rails.application.routes.draw do
   resources :messages, only: [ :index, :create ]
 
   namespace :admin do
-    resources :users, only: [ :index, :show ]
+    resources :users, only: [ :index, :show ] do
+      member do
+        patch :update_summary
+        post :send_notification
+      end
+    end
   end
 
   root to: "dashboard#show"
