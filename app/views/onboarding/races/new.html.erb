@@ -43,6 +43,12 @@
         <p class="field-hint">Advanced means high volume (5-6 sessions/week) and a demanding tone from your coach.</p>
       </div>
 
+      <div>
+        <%= f.label :strength_training_frequency, "Strength/bodyweight training", class: "field-label" %>
+        <%= f.select :strength_training_frequency, Race::STRENGTH_TRAINING_LABELS.invert, {}, class: "field-input" %>
+        <p class="field-hint">If you want strength or bodyweight sessions mixed in, your coach schedules them around your key running days, not on top of them.</p>
+      </div>
+
       <%= f.submit "Continue", class: "btn-primary w-full" %>
     <% end %>
   </div>

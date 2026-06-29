@@ -19,16 +19,14 @@
 </div>
 
 <div class="space-y-3 mb-6">
-  <% unless current_user.strava_connection %>
+  <% if current_user.strava_connection.blank? %>
     <div class="banner-warning">
-      <span>Connect Strava so your coach can see your real training.</span>
+      <span>Connect Strava first so your coach can see your real training before generating a plan.</span>
       <%= link_to "Connect Strava", strava_connect_path, class: "btn-secondary shrink-0" %>
     </div>
-  <% end %>
-
-  <% unless current_user.claude_credential %>
+  <% elsif current_user.claude_credential.blank? %>
     <div class="banner-warning">
-      <span>Add your Claude API key to generate your training program.</span>
+      <span>Strava connected. Now add your Claude API key to generate your training program.</span>
       <%= link_to "Add key", new_claude_credential_path, class: "btn-secondary shrink-0" %>
     </div>
   <% end %>

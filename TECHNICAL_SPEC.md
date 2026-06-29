@@ -47,6 +47,7 @@ Race
   race_date:date
   time_objective:string   # e.g. "01:50:00"
   difficulty:string  # beginner | intermediate | advanced
+  strength_training_frequency:string  # none | 1_2_per_week | 3_4_per_week | 5_plus_per_week
   has_one :training_program
 
 TrainingProgram
@@ -88,7 +89,20 @@ Secrets (`api_key`, `access_token`, `refresh_token`) use Rails'
 
 One Strava API application registered by the app owner
 (`STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET`, app-level env vars). Each
-athlete authorizes that single app via standard OAuth2:
+athlete authorizes that single app via standard OAuth2.
+
+Strava must be connected *before* adding a Claude key —
+`ClaudeCredentialsController` has a `require_strava_connection`
+before_action on `new`/`create` (not `edit`/`update`, so it never locks
+out someone who already has a key) that redirects back to the dashboard
+otherwise. This isn't just onboarding polish: `Coach::GenerateProgram` is
+triggered the moment a Claude key is saved, and `Coach::ContextBuilder`
+reads `user.strava_activities` at that moment — connecting Strava first
+means the activity backfill (`Strava::SyncActivitiesJob`, enqueued from
+the OAuth callback) has already run by the time the athlete manually
+navigates to add their key, so the *first* coach summary is informed by
+real training data instead of generating blind and needing a second call
+to catch up.
 
 1. `GET /strava/connect` → redirect to Strava's authorize URL with scope
    `activity:read_all`.

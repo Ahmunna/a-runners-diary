@@ -20,12 +20,16 @@ Athletes (friends-and-family beta, invite-only for now) and one admin role
    injuries / context / anything the athlete wants Claude to know. Only
    asked once; editable later from settings.
 3. **Race goal** — distance (5K / 10K / Half Marathon / Marathon / Hyrox),
-   date, target time, difficulty level (Beginner / Intermediate / Advanced).
-   One active race at a time. Hyrox is a hybrid race (running + 8
-   functional stations) — the coach knows the format and mixes strength
-   and station-specific conditioning into the plan, not just running volume.
-4. **Connect Strava** — OAuth authorization. We pull recent activity history
-   immediately after connecting to assess current fitness level.
+   date, target time, difficulty level (Beginner / Intermediate / Advanced),
+   and optional strength/bodyweight training frequency (None / 1-2x /
+   3-4x / 5+x per week) for runners who also want to lift. One active race
+   at a time. Hyrox is a hybrid race (running + 8 functional stations) —
+   the coach knows the format and mixes strength and station-specific
+   conditioning into the plan regardless of the frequency setting.
+4. **Connect Strava** — OAuth authorization, required before the Claude key
+   step. We pull recent activity history immediately after connecting to
+   assess current fitness level, so the very first coach summary is
+   already informed by real training data instead of starting blind.
 5. **Add Claude API key** — athlete pastes their own Anthropic API key.
    Stored encrypted, never shown again in full (masked after entry).
 6. Program generation kicks off — first call to Claude using all of the

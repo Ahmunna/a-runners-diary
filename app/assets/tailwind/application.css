@@ -76,19 +76,19 @@
   }
 
   .banner-warning {
-    @apply rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-3 bg-amber-50 text-amber-900 border border-amber-200;
+    @apply rounded-xl px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-3 bg-amber-50 text-amber-900 border border-amber-200;
   }
 
   .banner-info {
-    @apply rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-3 bg-navy-50 text-navy-800 border border-navy-200;
+    @apply rounded-xl px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-3 bg-navy-50 text-navy-800 border border-navy-200;
   }
 
   .banner-success {
-    @apply rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200;
+    @apply rounded-xl px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200;
   }
 
   .banner-error {
-    @apply rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-3 bg-rose-50 text-rose-800 border border-rose-200;
+    @apply rounded-xl px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-3 bg-rose-50 text-rose-800 border border-rose-200;
   }
 
   .nav-link {

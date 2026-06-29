@@ -34,7 +34,12 @@ module Coach
     attr_reader :user
 
     def coach_specialty
-      user.race&.hyrox? ? "hybrid running + functional fitness coach" : "running coach"
+      race = user.race
+      return "running coach" unless race
+      return "hybrid running + functional fitness coach" if race.hyrox?
+      return "hybrid running + strength coach" if race.wants_strength_training?
+
+      "running coach"
     end
 
     def athlete_section
@@ -61,6 +66,7 @@ module Coach
         Target time: #{race.time_objective.presence || "not specified"}
         Difficulty level: #{race.difficulty}
         #{hyrox_structure_note if race.hyrox?}
+        #{strength_training_note if race.wants_strength_training?}
       SECTION
     end
 
@@ -74,6 +80,18 @@ module Coach
         (compromised running after stations, sled work, grip/carry
         endurance) — don't just write a generic running plan and call it
         Hyrox prep.
+      NOTE
+    end
+
+    def strength_training_note
+      race = user.race
+
+      <<~NOTE
+        This athlete wants strength/bodyweight training mixed into their
+        running block: #{race.strength_training_label}. Schedule dedicated
+        strength/bodyweight sessions on non-key-running days (not on long
+        runs or hard interval/tempo days) — never let strength work
+        compromise the running sessions that actually matter for this race.
       NOTE
     end
 

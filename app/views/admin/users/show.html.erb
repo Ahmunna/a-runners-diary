@@ -36,10 +36,10 @@
       <p class="text-sm text-navy-700 whitespace-pre-wrap mb-3"><%= @program.claude_summary %></p>
       <ul class="text-sm text-navy-600 space-y-1">
         <% @program.training_days.order(:date).each do |day| %>
-          <li class="flex justify-between border-b border-navy-50 py-1.5">
-            <span><%= day.date %></span>
-            <span class="badge-<%= day.status == 'completed' ? 'success' : (day.status == 'skipped' ? 'warning' : 'neutral') %>"><%= day.status.humanize %></span>
-            <span class="text-navy-500 flex-1 ml-3"><%= day.workout %></span>
+          <li class="flex flex-wrap items-baseline gap-x-3 border-b border-navy-50 py-1.5">
+            <span class="shrink-0"><%= day.date %></span>
+            <span class="badge-<%= day.status == 'completed' ? 'success' : (day.status == 'skipped' ? 'warning' : 'neutral') %> shrink-0"><%= day.status.humanize %></span>
+            <span class="text-navy-500 basis-full sm:basis-0 sm:flex-1"><%= day.workout %></span>
           </li>
         <% end %>
       </ul>

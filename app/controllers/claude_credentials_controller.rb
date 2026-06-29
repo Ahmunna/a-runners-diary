@@ -1,4 +1,9 @@
 class ClaudeCredentialsController < ApplicationController
+  # Only enforced on first setup (new/create) — once an athlete has a key,
+  # editing/replacing it shouldn't suddenly lock them out just because
+  # they later disconnected Strava.
+  before_action :require_strava_connection, only: [ :new, :create ]
+
   def new
     @claude_credential = current_user.claude_credential || current_user.build_claude_credential
   end
@@ -32,6 +37,12 @@ class ClaudeCredentialsController < ApplicationController
   end
 
   private
+
+  def require_strava_connection
+    return if current_user.strava_connection.present? || current_user.claude_credential.present?
+
+    redirect_to dashboard_path, alert: "Connect Strava first, so your coach starts with your real training history."
+  end
 
   def claude_credential_params
     params.require(:claude_credential).permit(:api_key)
